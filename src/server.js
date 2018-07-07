@@ -32,6 +32,7 @@ for (let i = 0; i < raw_zones.length; i++) {
 }
 
 async function UpdateRecord (zone, resultip) {
+  zone.awsip = resultip
   let args = {
     zoneId: zone.id,
     name: zone.domain,
@@ -73,6 +74,7 @@ async function getIP (zone) {
 function Updater () {
   this.ipv6 = null;
   this.ipv4 = null;
+  this.ready = false;
   this.ipv6_enabled = ipv6e;
 
   this.getrecords = async function () {
@@ -85,21 +87,9 @@ function Updater () {
     }
   }
 
-  this.update = async function () {
-    zones.forEach(async (zone) => {
-      if (zone.type === 'AAA') {
-        if (this.ipv6_enabled && !zone.awsip === this.ipv6) {
-          await UpdateRecord(zone, this.ipv6)
-        }
-      } else {
-        if (zone.awsip === !this.ipv4) {
-          await UpdateRecord(zone, this.ipv4)
-        }
-      }
-    })
-  }
   this.populate = async function () {
-    zones.forEach(async (zone) => {
+    for (let i = 0; i < zones.length; i++) {
+      let zone = zones[i]
       if (zone.type === 'AAAA') {
         try {
           zone.localip = this.ipv6;
@@ -117,7 +107,22 @@ function Updater () {
           zone.localip = null
         }
       }
-      console.log(zone)
+    }
+    this.ready = true
+  }
+
+  this.update = async function () {
+    if (!this.ready) return
+    zones.forEach(async (zone) => {
+      if (this.ipv6_enabled && zone.type == 'AAAA') {
+          if (zone.awsip != this.ipv6) {
+            console.log(`Updating IPv6: ${zone.domain} ${zone.awsip}`)
+            await UpdateRecord(zone, this.ipv6)
+          }
+      } else if (zone.type == 'A' && zone.awsip != this.ipv4) {
+        console.log(`Updating IPv4: ${zone.domain} ${zone.awsip}`)
+        await UpdateRecord(zone, this.ipv4)
+      }
     })
   }
 }
