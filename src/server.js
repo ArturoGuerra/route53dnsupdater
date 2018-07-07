@@ -14,7 +14,7 @@ const r53 = new Route53({
 let zones = []
 
 class HostedZone {
-  constructor(id, domain, type, ttl) {
+  constructor({ id, domain, type, ttl }) {
     this.localip = null;
     this.awsip = null;
     this.id = id;
@@ -24,9 +24,12 @@ class HostedZone {
   }
 }
 
-zones.push(new HostedZone('Z9MU7KVGUBNBY', 'home.arturonet.com', 'A', 600))
-zones.push(new HostedZone('Z9MU7KVGUBNBY', 'mandalore.arturonet.com', 'A', 600))
-zones.push(new HostedZone('Z9MU7KVGUBNBY', 'mandalore.arturonet.com', 'AAAA', 600))
+// zones.json uses json format from HostedZone
+const raw_zones = require('./zones.json')
+for (let i = 0; i < raw_zones.length; i++) {
+  let zone = new HostedZone(raw_zones[i])
+  zones.push(zone)
+}
 
 async function UpdateRecord (zone, resultip) {
   let args = {
