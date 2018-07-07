@@ -1,0 +1,15 @@
+{
+  "name": "route53update",
+  "version": "1.0.0",
+  "description": "",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js"
+  },
+  "author": "Arturo Guerra <ar2roguerra@gmail.com>",
+  "license": "ISC",
+  "dependencies": {
+    "nice-route53": "^1.3.0",
+    "public-ip": "^2.4.0"
+  }
+}
